@@ -35,10 +35,8 @@
         {{ name }}
         <hr>
         <button @click="toggleBox">{{ boxName }}</button><br><br>
+        <test-box v-if="isVisible" />
 
-        <div v-if="isVisible" class="box">
-
-        </div>
         <hr>
         <login-form />
     </div>
@@ -70,24 +68,80 @@
 
     app.component('login-form', {
         template: `
-            <form @submit="handleSubmit">
+            <form @submit.prevent="handleSubmit">
                 <h1>{{title}}</h1>
-                <label>{{ labelName }}</label><input type="text" />
-                <label>{{ labelPassword }}</label><input type="password" />
+                <custom-input
+                v-for="(input, i) in inputs"
+                :key="i"
+                :label="input.label"
+                v-model="input.value"
+                :type="input.type"
+                />
                 <button>Log in</button>
             </form>
         `,
+        components: ['custom-input'],
         data() {
             return{
                 title: 'Login Form',
-                labelName: 'User Name',
-                labelPassword: 'Password'
+                inputs:[
+                    {
+                    label: 'User Name',
+                    value: '',
+                    type: 'text'
+                },
+                    {
+                    label: 'Password',
+                    value: '',
+                    type: 'password'
+                }
+            ]
             }
         },
         methods: {
             handleSubmit(){
-                alert('Submitted')
+                alert(this.inputs[0].value + ' ' + this.inputs[1].value)
             }
+        }
+    })
+
+    app.component('custom-input', {
+        template: `
+            <label>
+                {{ label }}
+                <input v-bind:type="type" v-model="inputValue">
+            </label>
+        `,
+        computed:{
+            inputValue:{
+                get(){
+                    return this.modelValue
+                },
+                set(value){
+                    this.$emit('update:modelValue', value)
+                }
+            }
+        },
+        props: ['label','type','modelValue']
+        // data(){
+        //     return{
+        //         inputValue: ''
+        //     }
+        // }
+    })
+
+    app.component('test-box', {
+        template:`
+            <div class="box"></div>
+        `,
+        created(){
+            alert('created')
+        },
+        mounted(){
+            alert('mounted')
+        },
+        unmounted(){
+            alert('unmounted')
         }
     })
     app.mount('#app')
